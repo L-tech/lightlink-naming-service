@@ -4,6 +4,9 @@
 
 The LightLink Naming Service (LNS) is a blockchain hackathin project designed to simplify the interaction with blockchain addresses through human-readable names. In addition to providing an intuitive naming system, LNS integrates a unique on-chain rewards functionality, incentivizing users through Experience Points (XP) tokens for engaging with the platform and participating in various activities. This project aims to enhance user experience in the blockchain space, making it more accessible and enjoyable for both newcomers and seasoned users.
 
+## LNSJS For Integration
+[lnsjs](https://www.npmjs.com/package/lnsjs) is a JavaScript library designed to simplify the integration and interaction with the LightLink Naming Service (LNS) directly from your web applications or Node.js projects. Inspired by the functionality and ease of use of ensjs, lnsjs provides developers with a set of tools to perform name registrations, lookups, and manage on-chain rewards within the LNS ecosystem efficiently.
+
 ## Features
 
 - **Human-Readable Names**: Replace complex blockchain addresses with easy-to-remember names, improving the user experience for transactions and interactions on the blockchain.
@@ -31,7 +34,7 @@ The LightLink Naming Service (LNS) is a blockchain hackathin project designed to
 2. **Install Dependencies**
 
    ```bash
-   npm install
+   npm install lnsjs ether
    ```
 
 
