@@ -72,7 +72,7 @@ const DomainDetail = () => {
         string,
       ]
     >()
-  let expirationDate = String(dayjs(Number(expiryDate) * 1000))
+  let expirationDate = String(expiryDate)
 
   async function getAddressFromDomainName() {
     try {

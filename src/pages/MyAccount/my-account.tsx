@@ -7,7 +7,6 @@ import { toast } from '../../hooks/useToast'
 import { Web3Context } from '../../context/web3-context'
 import Loader from '../../components/Loader/loader'
 import '../../App.scss'
-import dayjs from 'dayjs'
 import { Link } from 'react-router-dom'
 
 const MyAccount = () => {
@@ -15,7 +14,7 @@ const MyAccount = () => {
   const { currentAccount } = Web3Cntx
   const [getOwnerNamesLoading, setGetOwnerNamesLoading] = useState(false)
   const [ownerDetails, setOwnerDetails] = useState<
-    { name: string; expiry: string }[]
+    { name: string; expiry: any }[]
   >([])
   const [currentLevel, setCurrentLevel] = useState<string>()
   const [currentXpPoint, setCurrentXpPoint] = useState<BigInt>()
@@ -95,22 +94,22 @@ const MyAccount = () => {
   const handleGetOwnerExpiration = async (address: string, index: number) => {
     try {
       const res: any = await getExpiry(address + '.link')
-      if (!res.error) {
+      console.log(res.response)
+      
         setOwnerDetails((prevState) => {
           const newArray = [...prevState]
           newArray[index] = {
             name: address + '.link',
-            expiry: String(dayjs(Number(res.response._hex) * 1000)),
+            expiry: res.response.toString()
           }
           return newArray
         })
-      } else {
+      
         // toast({
         //   title: 'Error',
         //   variant: 'destructive',
         //   description: res.response,
         // })
-      }
     } catch (error) {
       console.log('Error in fetching owner expiry ->', error)
       toast({

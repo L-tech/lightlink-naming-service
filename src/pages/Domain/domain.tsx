@@ -87,7 +87,7 @@ const Domain = () => {
     setExpiryDateLoading(true)
     try {
       const res = await getExpiry(domainName)
-      const finalDate = String(parseInt((res.response as any)._hex || '0', 16))
+      const finalDate = String(res.response)
       setExpiryDate(finalDate)
     } catch (error) {
       console.log('Error in getExpiryFromDomainName: ')

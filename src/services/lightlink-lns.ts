@@ -177,7 +177,8 @@ export const getExpiry = async (domainName: string) => {
     const LNSInstance = new LNS()
     await LNSInstance.setProvider(provider)
     const expiry = await LNSInstance.getExpiry(domainName)
-    return { error: false, response: expiry?.expiry }
+    console.log(expiry);
+    return { error: false, response: expiry }
   } catch (error) {
     return { error: true, response: (error as Error).message }
   }
@@ -226,12 +227,26 @@ export const setTextRecord = async (
     await LNSInstance.setProvider(provider)
     const res = await LNSInstance.setTxtRecord(domainName, { key, value })
     await res.wait()
+    const address = await getAddress(domainName);
+
+    // Check if address.response is defined
+    if (typeof address.response === 'string') {
+      console.log(address.response);
+      const grantXp = await LNSInstance.grantXpPoint(String(address.response), 50);
+      await grantXp.wait()
+    } else {
+      // Handle the undefined case here. You might want to throw an error or return a specific response.
+      console.error('Address response is undefined.');
+      return { error: true, response: 'Address response is undefined' };
+    }
+
     return { error: false, response: res }
   } catch (error) {
     console.log('ERROR: ', error)
     return { error: true, response: (error as Error).message }
   }
 }
+
 
 export const grantXpPoint = async (
   address: string,
@@ -309,8 +324,9 @@ export const renewNames = async (
       value: ethers.utils.parseUnits(price, 18),
     })
     await res.wait()
-    const address = getAddress(name);
-    const grantXp = await LNSInstance.grantXpPoint(String(address), 50);
+    const address = await getAddress(name);
+    console.log(address.response);
+    const grantXp = await LNSInstance.grantXpPoint(String(address.response), 50);
     await grantXp.wait()
     if (res.hash) {
       return { error: false, response: res.hash }
@@ -318,6 +334,7 @@ export const renewNames = async (
       return { error: true, response: 'Something went wrong' }
     }
   } catch (error) {
+    console.log(error)
     return { error: true, response: (error as Error).message }
   }
 }

@@ -49,9 +49,7 @@ const AddressRegistrant = () => {
       setExpiryDateLoading(true)
       try {
         const res = await getExpiry(domainName)
-        const finalDate = String(
-          parseInt((res as any).response._hex || '0', 16),
-        )
+        const finalDate = String(res.response)
         setExpiryDate(finalDate)
       } catch (error) {
         console.log('Error in getting domain expiry -> ', error)
