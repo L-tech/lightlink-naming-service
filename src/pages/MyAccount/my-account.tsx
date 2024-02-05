@@ -2,12 +2,13 @@ import React, { useContext, useEffect, useState } from 'react'
 import { ReactComponent as GlobeLogo } from '../../assets/icons/globe-icon.svg'
 import { ReactComponent as CopyIcon } from '../../assets/icons/copy-icon.svg'
 import { copyToClipboard } from '../../lib/utils'
-import { getExpiry, getOwnerNames, getUserLevel } from '../../services/lightlink-lns'
+import { getExpiry, getOwnerNames, getUserLevel, getUserXp } from '../../services/lightlink-lns'
 import { toast } from '../../hooks/useToast'
 import { Web3Context } from '../../context/web3-context'
 import Loader from '../../components/Loader/loader'
 import '../../App.scss'
 import dayjs from 'dayjs'
+import { Link } from 'react-router-dom'
 
 const MyAccount = () => {
   const Web3Cntx = useContext<any>(Web3Context)
@@ -16,9 +17,19 @@ const MyAccount = () => {
   const [ownerDetails, setOwnerDetails] = useState<
     { name: string; expiry: string }[]
   >([])
-  const [currentLevel, setCurrentLevel] = useState<
-    { level: string;}
-  >()
+  const [currentLevel, setCurrentLevel] = useState<string>()
+  const [currentXpPoint, setCurrentXpPoint] = useState<BigInt>()
+  const [discountPercentage, setDiscountPercentage] = useState(0);
+
+  type LevelKey = 'Newcomer' | 'Explorer' | 'Contributor' | 'Advocate' | 'Pioneer' | 'Visionary';
+  const levelToDiscountMap: { [key in LevelKey]: number } = {
+    Newcomer: 0,
+    Explorer: 10,
+    Contributor: 25,
+    Advocate: 50,
+    Pioneer: 75,
+    Visionary: 100,
+  };
 
   const handleGetownerNames = async (address: string) => {
     try {
@@ -54,29 +65,32 @@ const MyAccount = () => {
   }
   const handleCurrentLevel = async (address: string) => {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const res: any = await getUserLevel(address)
-      if (!res.error) {
-        setCurrentLevel(
-          res.response.map((level: string) => ({
-            level: level
-          })),
-        )
-      } else {
-        toast({
-          title: 'Error',
-          variant: 'destructive',
-          description: res.response,
-        })
-      }
+      const res: any = await getUserLevel(address);
+      setCurrentLevel(res.response);
+      const level = res.response as LevelKey;
+      const discount = levelToDiscountMap[level] || 0;
+      setDiscountPercentage(discount);
     } catch (error) {
-      console.log('Error in fetching user level ->', error)
+      console.log('Error in fetching user level ->', error);
       toast({
         title: 'Error',
         description: (error as Error).message,
-      })
+      });
     }
-  }
+  };
+  const handlecurrentXpPoint = async (address: string) => {
+    try {
+      const res: any = await getUserXp(address);
+      console.log(res.response)
+      setCurrentXpPoint(res.response);
+    } catch (error) {
+      console.log('Error in fetching user level ->', error);
+      toast({
+        title: 'Error',
+        description: (error as Error).message,
+      });
+    }
+  };
 
   const handleGetOwnerExpiration = async (address: string, index: number) => {
     try {
@@ -91,11 +105,11 @@ const MyAccount = () => {
           return newArray
         })
       } else {
-        toast({
-          title: 'Error',
-          variant: 'destructive',
-          description: res.response,
-        })
+        // toast({
+        //   title: 'Error',
+        //   variant: 'destructive',
+        //   description: res.response,
+        // })
       }
     } catch (error) {
       console.log('Error in fetching owner expiry ->', error)
@@ -110,6 +124,7 @@ const MyAccount = () => {
     if (currentAccount) {
       handleGetownerNames(currentAccount)
       handleCurrentLevel(currentAccount)
+      handlecurrentXpPoint(currentAccount)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentAccount])
@@ -117,7 +132,7 @@ const MyAccount = () => {
   return (
     <div className="w-11/12 lg:w-10/12 mx-auto">
       <div className="text-white text-left font-bold text-sm md:text-xl lg:text-2xl mt-8 mb-5">
-        My Account {currentLevel?.level} - XP Points
+      My Account: {currentLevel} Tier (Discount: {discountPercentage}%) - XP Points: {currentXpPoint?.toString()}
       </div>
       <div className="result__container font-medium text-gray-unaryBorder p-6 md:p-8 pb-0">
         {!!ownerDetails.length ? (
@@ -144,7 +159,10 @@ const MyAccount = () => {
                       <div className="flex flex-row items-center gap-3">
                         <GlobeLogo />
                         <h3 className="text-white md:text-lg text-base">
+                        <Link
+                        to={`/domain/${owner.name}/details`}>
                           {owner.name}
+                        </Link>
                         </h3>
                       </div>
                       <CopyIcon

@@ -30,14 +30,23 @@ export const getPriceOnYear = async (name: string, duration: number) => {
 
 export const getUserXp = async (address: string) => {
   try {
-    const LNSInstance = new LNS()
-    await LNSInstance.setProvider(provider)
-    const xp = await LNSInstance.getUserXp(address)
-    return { error: true, response: xp }
+    const LNSInstance = new LNS();
+    await LNSInstance.setProvider(provider);
+    const xpWei = await LNSInstance.getUserXp(address);
+    if (typeof xpWei !== 'boolean' && xpWei !== undefined) {
+      // Convert Wei to Ether assuming xpWei is of BigNumber type
+      const xpEther = ethers.utils.formatEther(xpWei);
+      return { error: false, response: xpEther };
+    } else {
+      // Handle unexpected xpWei type (boolean or undefined)
+      console.error('Unexpected type for xpWei:', xpWei);
+      return { error: true, response: 'Unexpected response type' };
+    }
   } catch (error) {
-    return { error: true, response: (error as Error).message }
+    console.error('Error fetching user XP:', error);
+    return { error: true, response: (error as Error).message };
   }
-}
+};
 
 export const getUserLevel = async (address: string) => {
   try {
@@ -291,6 +300,7 @@ export const renewNames = async (
   price: string,
 ) => {
   try {
+    console.log(name)
     const LNSInstance = new LNS()
     const provider = new ethers.providers.Web3Provider((window as any).ethereum)
     await LNSInstance.setProvider(provider)
@@ -299,6 +309,9 @@ export const renewNames = async (
       value: ethers.utils.parseUnits(price, 18),
     })
     await res.wait()
+    const address = getAddress(name);
+    const grantXp = await LNSInstance.grantXpPoint(String(address), 50);
+    await grantXp.wait()
     if (res.hash) {
       return { error: false, response: res.hash }
     } else {
